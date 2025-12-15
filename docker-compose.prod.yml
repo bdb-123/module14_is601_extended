@@ -50,19 +50,6 @@ services:
       timeout: 5s
       retries: 5
 
-  watchtower:
-    image: containrrr/watchtower:latest
-    container_name: watchtower
-    restart: unless-stopped
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      WATCHTOWER_POLL_INTERVAL: 300
-      WATCHTOWER_CLEANUP: "true"
-      WATCHTOWER_INCLUDE_RESTARTING: "true"
-      WATCHTOWER_LABEL_ENABLE: "true"
-    command: --interval 300
-
 volumes:
   postgres_data:
     driver: local
