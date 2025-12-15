@@ -35,10 +35,17 @@ import uvicorn  # ASGI server for running FastAPI apps
 from app.auth.dependencies import get_current_active_user  # Authentication dependency
 from app.models.calculation import Calculation  # Database model for calculations
 from app.models.user import User  # Database model for users
+from app.models.car import Car  # Database model for cars
+from app.models.listing import Listing  # Database model for listings
 from app.schemas.calculation import CalculationBase, CalculationResponse, CalculationUpdate  # API request/response schemas
 from app.schemas.token import TokenResponse  # API token schema
 from app.schemas.user import UserCreate, UserResponse, UserLogin  # User schemas
+from app.schemas.car import CarCreate, CarUpdate, CarResponse, CarCompareStats, VINDecodeResponse  # Car schemas
+from app.schemas.listing import ListingCreate, ListingUpdate, ListingResponse  # Listing schemas
+from app.schemas.recommendation import CarRecommendationRequest, CarRecommendationResponse  # Recommendation schemas
+from app.schemas.live_listing import LiveListingSearch, LiveListingResponse  # Live listing schemas
 from app.database import Base, get_db, engine  # Database connection
+from app.services.vin_decoder import VINDecoderService  # VIN decoder service
 
 
 # ------------------------------------------------------------------------------
@@ -160,6 +167,85 @@ def edit_calculation_page(request: Request, calc_id: str):
         HTMLResponse: Rendered template with calculation ID passed to frontend
     """
     return templates.TemplateResponse("edit_calculation.html", {"request": request, "calc_id": calc_id})
+
+@app.get("/cars-ui", response_class=HTMLResponse, tags=["web"])
+def cars_page(request: Request):
+    """
+    Cars list page for CarCompare feature.
+    
+    This page displays all cars owned by the user and provides:
+    - A form to add a new car
+    - VIN decoder integration
+    - List/grid of user's cars with delete functionality
+    - Links to individual car detail pages
+    
+    JavaScript in this page calls the /cars API endpoints.
+    """
+    return templates.TemplateResponse("cars.html", {"request": request})
+
+@app.get("/cars-ui/{car_id}", response_class=HTMLResponse, tags=["web"])
+def car_detail_page(request: Request, car_id: str):
+    """
+    Car detail page showing listings and comparison statistics.
+    
+    This page displays:
+    - Car details (year, make, model, trim, VIN)
+    - All listings for this car
+    - Comparison statistics (min/max/avg prices, best deal)
+    - Form to add new listings
+    - Delete functionality for car and listings
+    
+    Args:
+        request: The FastAPI request object (required by Jinja2)
+        car_id: UUID of the car to view
+        
+    Returns:
+        HTMLResponse: Rendered template with car ID passed to frontend
+    """
+    return templates.TemplateResponse("car_detail.html", {"request": request, "car_id": car_id})
+
+@app.get("/recommendations-ui", response_class=HTMLResponse, tags=["web"])
+def recommendations_page(request: Request):
+    """
+    AI-powered car recommendations page.
+    
+    This page allows users to input their preferences and get
+    intelligent car recommendations based on:
+    - Budget
+    - Body style
+    - Year range
+    - Brands
+    - Features
+    
+    JavaScript in this page calls the /cars/recommendations API endpoint.
+    """
+    return templates.TemplateResponse("recommendations.html", {"request": request})
+
+@app.get("/live-listings-ui", response_class=HTMLResponse, tags=["web"])
+def live_listings_page(request: Request):
+    """
+    Live car listings search page.
+    
+    This page allows users to search real-time car listings from
+    multiple sources (CarGurus, Autotrader, Cars.com, etc.).
+    
+    JavaScript in this page calls the /cars/live-listings API endpoint.
+    """
+    return templates.TemplateResponse("live_listings.html", {"request": request})
+
+@app.get("/gallery-ui", response_class=HTMLResponse, tags=["web"])
+def gallery_page(request: Request):
+    """
+    Car gallery showcase page.
+    
+    This page displays a visual gallery of popular cars including:
+    - Lexus luxury vehicles (IS 350, ES 350, RX 350)
+    - Honda Civic variants (Sedan, Coupe, Hatchback)
+    
+    Features real car images from Imagin Studio API with detailed
+    specifications, pricing, and feature highlights.
+    """
+    return templates.TemplateResponse("gallery.html", {"request": request})
 
 
 # ------------------------------------------------------------------------------
@@ -390,6 +476,647 @@ def delete_calculation(
         raise HTTPException(status_code=404, detail="Calculation not found.")
 
     db.delete(calculation)
+    db.commit()
+    return None
+
+
+# ------------------------------------------------------------------------------
+# Car CRUD Endpoints
+# ------------------------------------------------------------------------------
+@app.post("/cars", response_model=CarResponse, status_code=status.HTTP_201_CREATED, tags=["cars"])
+def create_car(
+    car: CarCreate,
+    current_user = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Create a new car for the authenticated user."""
+    new_car = Car(
+        user_id=current_user.id,
+        year=car.year,
+        make=car.make,
+        model=car.model,
+        trim=car.trim,
+        vin=car.vin
+    )
+    db.add(new_car)
+    db.commit()
+    db.refresh(new_car)
+    return new_car
+
+
+@app.get("/cars", response_model=List[CarResponse], tags=["cars"])
+def get_user_cars(
+    current_user = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Get all cars for the authenticated user."""
+    cars = db.query(Car).filter(Car.user_id == current_user.id).all()
+    return cars
+
+
+@app.post("/cars/recommendations", response_model=CarRecommendationResponse, tags=["cars"])
+def get_car_recommendations(
+    request: CarRecommendationRequest,
+    current_user = Depends(get_current_active_user)
+):
+    """
+    Get AI-powered car recommendations based on preferences.
+    
+    This endpoint provides intelligent car suggestions based on:
+    - Budget range
+    - Preferred body styles (sedan, SUV, truck, etc.)
+    - Year range
+    - Brands/makes
+    - Desired features
+    - And more...
+    
+    Returns a list of recommended cars with pros, cons, and confidence scores.
+    """
+    from app.services.car_recommendations import CarRecommendationService
+    
+    return CarRecommendationService.generate_recommendations(request)
+
+
+@app.post("/cars/live-listings", response_model=LiveListingResponse, tags=["cars"])
+def search_live_listings(
+    search: LiveListingSearch,
+    current_user = Depends(get_current_active_user)
+):
+    """
+    Search for real-time car listings from multiple sources.
+    
+    This endpoint aggregates live listings from popular car shopping sites including:
+    - CarGurus
+    - Autotrader
+    - Cars.com
+    - TrueCar
+    - eBay Motors
+    
+    Search by:
+    - Make/Model
+    - Year range
+    - Price range
+    - Maximum mileage
+    - Location (ZIP code + radius)
+    
+    Returns actual listings currently for sale with prices, photos, and dealer info.
+    """
+    from app.services.live_listings import LiveListingService
+    
+    return LiveListingService.search_listings(search)
+
+
+@app.get("/cars/{car_id}", response_model=CarResponse, tags=["cars"])
+def get_car(
+    car_id: str,
+    current_user = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Get a specific car by ID (must be owned by authenticated user)."""
+    try:
+        car_uuid = UUID(car_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid car ID format")
+    
+    car = db.query(Car).filter(Car.id == car_uuid, Car.user_id == current_user.id).first()
+    if not car:
+        raise HTTPException(status_code=404, detail="Car not found")
+    
+    return car
+
+
+@app.patch("/cars/{car_id}", response_model=CarResponse, tags=["cars"])
+def update_car(
+    car_id: str,
+    car_update: CarUpdate,
+    current_user = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Update a car (must be owned by authenticated user)."""
+    try:
+        car_uuid = UUID(car_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid car ID format")
+    
+    car = db.query(Car).filter(Car.id == car_uuid, Car.user_id == current_user.id).first()
+    if not car:
+        raise HTTPException(status_code=404, detail="Car not found")
+    
+    # Update only provided fields
+    update_data = car_update.dict(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(car, field, value)
+    
+    db.commit()
+    db.refresh(car)
+    return car
+
+
+@app.delete("/cars/{car_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["cars"])
+def delete_car(
+    car_id: str,
+    current_user = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Delete a car (must be owned by authenticated user). Cascade deletes all associated listings."""
+    try:
+        car_uuid = UUID(car_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid car ID format")
+    
+    car = db.query(Car).filter(Car.id == car_uuid, Car.user_id == current_user.id).first()
+    if not car:
+        raise HTTPException(status_code=404, detail="Car not found")
+    
+    db.delete(car)
+    db.commit()
+    return None
+
+
+# ------------------------------------------------------------------------------
+# VIN Decode Endpoint
+# ------------------------------------------------------------------------------
+@app.get("/vin/{vin}", response_model=VINDecodeResponse, tags=["vin"])
+def decode_vin(vin: str):
+    """
+    Decode a VIN using the NHTSA (National Highway Traffic Safety Administration) API.
+    
+    This endpoint calls the external NHTSA VIN decoder API to retrieve vehicle
+    information including year, make, model, and trim.
+    
+    The NHTSA API is a free public service provided by the U.S. government.
+    
+    Args:
+        vin: Vehicle Identification Number (must be 17 characters)
+        
+    Returns:
+        VINDecodeResponse with year, make, model, trim (all optional)
+        
+    Raises:
+        400: Invalid VIN format (must be 17 characters)
+        502: External NHTSA API request failed (timeout, network error, etc.)
+        
+    Note:
+        This endpoint does NOT require authentication - it's a public utility.
+    """
+    import httpx
+    
+    # Validate VIN format
+    if len(vin) != 17:
+        raise HTTPException(
+            status_code=400,
+            detail="VIN must be exactly 17 characters"
+        )
+    
+    # Call the NHTSA API using our service
+    try:
+        result = VINDecoderService.decode_vin_sync(vin)
+        return VINDecodeResponse(**result)
+        
+    except httpx.TimeoutException as e:
+        raise HTTPException(
+            status_code=502,
+            detail=f"NHTSA API request timed out. Please try again later. ({str(e)})"
+        )
+    
+    except httpx.HTTPError as e:
+        raise HTTPException(
+            status_code=502,
+            detail=f"Failed to connect to NHTSA API. Please try again later. ({str(e)})"
+        )
+    
+    except ValueError as e:
+        raise HTTPException(
+            status_code=502,
+            detail=f"NHTSA API returned invalid data. ({str(e)})"
+        )
+    
+    except Exception as e:
+        # Catch-all for unexpected errors
+        raise HTTPException(
+            status_code=502,
+            detail=f"Unexpected error while decoding VIN. Please try again later. ({str(e)})"
+        )
+
+
+# ------------------------------------------------------------------------------
+# Car Comparison Endpoint
+# ------------------------------------------------------------------------------
+@app.get("/cars/{car_id}/compare", response_model=CarCompareStats, tags=["cars"])
+def compare_car_listings(
+    car_id: str,
+    current_user = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Compute comparison statistics from all listings for a specific car.
+    
+    This endpoint calculates server-side statistics without requiring additional
+    database tables:
+    - count: Total number of listings
+    - min_price: Lowest listing price
+    - max_price: Highest listing price
+    - avg_price: Average listing price
+    - avg_price_per_mile: Average price per mile (only for listings with mileage)
+    - best_deal_listing_id: Listing with lowest price (tie-breaker: lowest mileage)
+    
+    Ownership enforcement:
+    - Car must belong to the authenticated user
+    
+    Args:
+        car_id: UUID of the car
+        current_user: Authenticated user from JWT token
+        db: Database session
+        
+    Returns:
+        CarCompareStats with computed statistics
+        
+    Raises:
+        400: Invalid car ID format
+        404: Car not found or doesn't belong to user
+    """
+    try:
+        car_uuid = UUID(car_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid car id format.")
+    
+    # Verify car exists and belongs to current user
+    car = db.query(Car).filter(
+        Car.id == car_uuid,
+        Car.user_id == current_user.id
+    ).first()
+    if not car:
+        raise HTTPException(status_code=404, detail="Car not found.")
+    
+    # Get all listings for this car
+    listings = db.query(Listing).filter(
+        Listing.car_id == car_uuid
+    ).all()
+    
+    # Compute statistics
+    count = len(listings)
+    
+    if count == 0:
+        # No listings - return zeros/nulls
+        return CarCompareStats(
+            count=0,
+            min_price=None,
+            max_price=None,
+            avg_price=None,
+            avg_price_per_mile=None,
+            best_deal_listing_id=None
+        )
+    
+    # Extract prices
+    prices = [float(listing.price) for listing in listings]  # type: ignore
+    min_price = min(prices)
+    max_price = max(prices)
+    avg_price = sum(prices) / count
+    
+    # Compute average price per mile (only for listings with mileage)
+    listings_with_mileage = [
+        listing for listing in listings 
+        if listing.mileage is not None and listing.mileage > 0  # type: ignore
+    ]
+    if listings_with_mileage:
+        price_per_mile_values = [
+            float(listing.price) / listing.mileage  # type: ignore
+            for listing in listings_with_mileage
+        ]
+        avg_price_per_mile = sum(price_per_mile_values) / len(price_per_mile_values)
+    else:
+        avg_price_per_mile = None
+    
+    # Find best deal: lowest price, tie-breaker is lowest mileage
+    # Sort by price first, then by mileage (treating None as infinity)
+    best_deal = sorted(
+        listings,
+        key=lambda listing: (
+            float(listing.price),  # type: ignore
+            listing.mileage if listing.mileage is not None else float('inf')
+        )
+    )[0]
+    
+    return CarCompareStats(
+        count=count,
+        min_price=round(min_price, 2),
+        max_price=round(max_price, 2),
+        avg_price=round(avg_price, 2),
+        avg_price_per_mile=round(avg_price_per_mile, 2) if avg_price_per_mile else None,  # type: ignore
+        best_deal_listing_id=best_deal.id  # type: ignore
+    )
+
+
+# ------------------------------------------------------------------------------
+# Listings Endpoints (nested under /cars/{car_id}/listings)
+# ------------------------------------------------------------------------------
+# Browse / List Listings for a Specific Car
+@app.get("/cars/{car_id}/listings", response_model=List[ListingResponse], tags=["listings"])
+def list_listings_for_car(
+    car_id: str,
+    current_user = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """
+    List all listings for a specific car owned by the current user.
+    
+    This endpoint enforces ownership: the car must belong to the authenticated user.
+    
+    Args:
+        car_id: UUID of the car
+        current_user: Authenticated user from JWT token
+        db: Database session
+        
+    Returns:
+        List of listings for the specified car
+        
+    Raises:
+        400: Invalid car ID format
+        404: Car not found or doesn't belong to user
+    """
+    try:
+        car_uuid = UUID(car_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid car id format.")
+    
+    # Verify car exists and belongs to current user
+    car = db.query(Car).filter(
+        Car.id == car_uuid,
+        Car.user_id == current_user.id
+    ).first()
+    if not car:
+        raise HTTPException(status_code=404, detail="Car not found.")
+    
+    # Get all listings for this car
+    listings = db.query(Listing).filter(
+        Listing.car_id == car_uuid
+    ).all()
+    
+    return listings
+
+
+# Create a New Listing for a Car
+@app.post(
+    "/cars/{car_id}/listings",
+    response_model=ListingResponse,
+    status_code=status.HTTP_201_CREATED,
+    tags=["listings"]
+)
+def create_listing_for_car(
+    car_id: str,
+    listing_data: ListingCreate,
+    current_user = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Create a new listing for a specific car.
+    
+    This endpoint enforces ownership:
+    - The car must belong to the authenticated user
+    - The car_id in the URL must match the car_id in the request body
+    
+    Args:
+        car_id: UUID of the car (from URL path)
+        listing_data: Listing data including car_id, price, mileage, etc.
+        current_user: Authenticated user from JWT token
+        db: Database session
+        
+    Returns:
+        The newly created listing
+        
+    Raises:
+        400: Invalid car ID format or car_id mismatch
+        404: Car not found or doesn't belong to user
+    """
+    try:
+        car_uuid = UUID(car_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid car id format.")
+    
+    # Verify car_id in URL matches car_id in body
+    if listing_data.car_id != car_uuid:
+        raise HTTPException(
+            status_code=400, 
+            detail="Car ID in URL must match car_id in request body."
+        )
+    
+    # Verify car exists and belongs to current user
+    car = db.query(Car).filter(
+        Car.id == car_uuid,
+        Car.user_id == current_user.id
+    ).first()
+    if not car:
+        raise HTTPException(status_code=404, detail="Car not found.")
+    
+    # Create the new listing
+    try:
+        new_listing = Listing(
+            car_id=car_uuid,
+            user_id=current_user.id,
+            price=listing_data.price,
+            mileage=listing_data.mileage,
+            source=listing_data.source,
+            url=listing_data.url,
+            location=listing_data.location
+        )
+        
+        db.add(new_listing)
+        db.commit()
+        db.refresh(new_listing)
+        return new_listing
+        
+    except ValueError as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+
+
+# Read / Retrieve a Specific Listing
+@app.get(
+    "/cars/{car_id}/listings/{listing_id}",
+    response_model=ListingResponse,
+    tags=["listings"]
+)
+def get_listing(
+    car_id: str,
+    listing_id: str,
+    current_user = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Retrieve a specific listing for a car.
+    
+    This endpoint enforces ownership:
+    - The car must belong to the authenticated user
+    - The listing must belong to the specified car
+    
+    Args:
+        car_id: UUID of the car
+        listing_id: UUID of the listing
+        current_user: Authenticated user from JWT token
+        db: Database session
+        
+    Returns:
+        The requested listing
+        
+    Raises:
+        400: Invalid car or listing ID format
+        404: Car or listing not found, or doesn't belong to user
+    """
+    try:
+        car_uuid = UUID(car_id)
+        listing_uuid = UUID(listing_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid car or listing id format.")
+    
+    # Verify car exists and belongs to current user
+    car = db.query(Car).filter(
+        Car.id == car_uuid,
+        Car.user_id == current_user.id
+    ).first()
+    if not car:
+        raise HTTPException(status_code=404, detail="Car not found.")
+    
+    # Get the listing (must belong to this car and this user)
+    listing = db.query(Listing).filter(
+        Listing.id == listing_uuid,
+        Listing.car_id == car_uuid,
+        Listing.user_id == current_user.id
+    ).first()
+    if not listing:
+        raise HTTPException(status_code=404, detail="Listing not found.")
+    
+    return listing
+
+
+# Update a Listing (PATCH for partial updates)
+@app.patch(
+    "/cars/{car_id}/listings/{listing_id}",
+    response_model=ListingResponse,
+    tags=["listings"]
+)
+def update_listing(
+    car_id: str,
+    listing_id: str,
+    listing_update: ListingUpdate,
+    current_user = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Update a specific listing (partial update).
+    
+    This endpoint enforces ownership:
+    - The car must belong to the authenticated user
+    - The listing must belong to the specified car and user
+    
+    Only provided fields will be updated. The car_id cannot be changed.
+    
+    Args:
+        car_id: UUID of the car
+        listing_id: UUID of the listing
+        listing_update: Fields to update (all optional)
+        current_user: Authenticated user from JWT token
+        db: Database session
+        
+    Returns:
+        The updated listing
+        
+    Raises:
+        400: Invalid car or listing ID format
+        404: Car or listing not found, or doesn't belong to user
+    """
+    try:
+        car_uuid = UUID(car_id)
+        listing_uuid = UUID(listing_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid car or listing id format.")
+    
+    # Verify car exists and belongs to current user
+    car = db.query(Car).filter(
+        Car.id == car_uuid,
+        Car.user_id == current_user.id
+    ).first()
+    if not car:
+        raise HTTPException(status_code=404, detail="Car not found.")
+    
+    # Get the listing (must belong to this car and this user)
+    listing = db.query(Listing).filter(
+        Listing.id == listing_uuid,
+        Listing.car_id == car_uuid,
+        Listing.user_id == current_user.id
+    ).first()
+    if not listing:
+        raise HTTPException(status_code=404, detail="Listing not found.")
+    
+    # Update only the fields that were provided
+    update_data = listing_update.dict(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(listing, field, value)
+    
+    listing.updated_at = datetime.now(timezone.utc)
+    db.commit()
+    db.refresh(listing)
+    return listing
+
+
+# Delete a Listing
+@app.delete(
+    "/cars/{car_id}/listings/{listing_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    tags=["listings"]
+)
+def delete_listing(
+    car_id: str,
+    listing_id: str,
+    current_user = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Delete a specific listing.
+    
+    This endpoint enforces ownership:
+    - The car must belong to the authenticated user
+    - The listing must belong to the specified car and user
+    
+    Args:
+        car_id: UUID of the car
+        listing_id: UUID of the listing
+        current_user: Authenticated user from JWT token
+        db: Database session
+        
+    Returns:
+        None (204 No Content)
+        
+    Raises:
+        400: Invalid car or listing ID format
+        404: Car or listing not found, or doesn't belong to user
+    """
+    try:
+        car_uuid = UUID(car_id)
+        listing_uuid = UUID(listing_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid car or listing id format.")
+    
+    # Verify car exists and belongs to current user
+    car = db.query(Car).filter(
+        Car.id == car_uuid,
+        Car.user_id == current_user.id
+    ).first()
+    if not car:
+        raise HTTPException(status_code=404, detail="Car not found.")
+    
+    # Get the listing (must belong to this car and this user)
+    listing = db.query(Listing).filter(
+        Listing.id == listing_uuid,
+        Listing.car_id == car_uuid,
+        Listing.user_id == current_user.id
+    ).first()
+    if not listing:
+        raise HTTPException(status_code=404, detail="Listing not found.")
+    
+    db.delete(listing)
     db.commit()
     return None
 

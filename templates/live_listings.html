@@ -1,0 +1,319 @@
+{% extends "layout.html" %}
+
+{% block title %}Browse Live Listings - CarCompare{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- Page Header -->
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">🔍 Browse Live Car Listings</h1>
+    <p class="text-gray-600">Search real-time listings from CarGurus, Autotrader, Cars.com, and more!</p>
+  </div>
+
+  <!-- Search Form -->
+  <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+    <form id="searchForm">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Make -->
+        <div>
+          <label for="make" class="block text-sm font-medium text-gray-700 mb-1">Make</label>
+          <input type="text" id="make" name="make" placeholder="e.g. Honda, Toyota, Lexus" 
+                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+        </div>
+
+        <!-- Model -->
+        <div>
+          <label for="model" class="block text-sm font-medium text-gray-700 mb-1">Model</label>
+          <input type="text" id="model" name="model" placeholder="e.g. Civic, Camry, ES" 
+                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+        </div>
+
+        <!-- Year Min -->
+        <div>
+          <label for="yearMin" class="block text-sm font-medium text-gray-700 mb-1">Year From</label>
+          <input type="number" id="yearMin" name="year_min" placeholder="2015" min="1990" max="2030"
+                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+        </div>
+
+        <!-- Year Max -->
+        <div>
+          <label for="yearMax" class="block text-sm font-medium text-gray-700 mb-1">Year To</label>
+          <input type="number" id="yearMax" name="year_max" placeholder="2024" min="1990" max="2030"
+                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+        </div>
+
+        <!-- Price Min -->
+        <div>
+          <label for="priceMin" class="block text-sm font-medium text-gray-700 mb-1">Min Price ($)</label>
+          <input type="number" id="priceMin" name="price_min" placeholder="10000" 
+                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+        </div>
+
+        <!-- Price Max -->
+        <div>
+          <label for="priceMax" class="block text-sm font-medium text-gray-700 mb-1">Max Price ($)</label>
+          <input type="number" id="priceMax" name="price_max" placeholder="30000" 
+                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+        </div>
+
+        <!-- Max Mileage -->
+        <div>
+          <label for="mileageMax" class="block text-sm font-medium text-gray-700 mb-1">Max Mileage</label>
+          <input type="number" id="mileageMax" name="mileage_max" placeholder="75000" 
+                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+        </div>
+
+        <!-- ZIP Code -->
+        <div>
+          <label for="zipCode" class="block text-sm font-medium text-gray-700 mb-1">ZIP Code (optional)</label>
+          <input type="text" id="zipCode" name="zip_code" placeholder="10001" maxlength="5"
+                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+        </div>
+
+        <!-- Radius -->
+        <div>
+          <label for="radius" class="block text-sm font-medium text-gray-700 mb-1">Radius (miles)</label>
+          <select id="radius" name="radius" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+            <option value="25">25 miles</option>
+            <option value="50" selected>50 miles</option>
+            <option value="100">100 miles</option>
+            <option value="200">200 miles</option>
+            <option value="500">500 miles (Nationwide)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Submit Button -->
+      <button type="submit" id="searchBtn"
+              class="mt-6 w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold py-3 px-6 rounded-md hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-md">
+        🔍 Search Live Listings
+      </button>
+    </form>
+  </div>
+
+  <!-- Loading Indicator -->
+  <div id="loadingIndicator" class="hidden text-center py-8">
+    <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-indigo-500 border-t-transparent"></div>
+    <p class="mt-4 text-gray-600">Searching CarGurus, Autotrader, Cars.com...</p>
+  </div>
+
+  <!-- Error Message -->
+  <div id="errorMessage" class="hidden bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+    <p class="text-red-800"></p>
+  </div>
+
+  <!-- Results Container -->
+  <div id="resultsContainer" class="hidden">
+    <div class="mb-6 flex justify-between items-center">
+      <div>
+        <h2 class="text-2xl font-bold text-gray-900 mb-1">Live Listings</h2>
+        <p id="searchSummary" class="text-gray-600"></p>
+      </div>
+      <div class="text-sm text-gray-500">
+        <span id="lastUpdated"></span>
+      </div>
+    </div>
+    
+    <div id="listingsList" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Listings will be inserted here -->
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('searchForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  const token = localStorage.getItem('access_token');
+  if (!token) {
+    window.location.href = '/login';
+    return;
+  }
+  
+  // Show loading, hide results/errors
+  document.getElementById('loadingIndicator').classList.remove('hidden');
+  document.getElementById('resultsContainer').classList.add('hidden');
+  document.getElementById('errorMessage').classList.add('hidden');
+  
+  // Collect form data
+  const formData = new FormData(e.target);
+  const data = {
+    make: formData.get('make') || null,
+    model: formData.get('model') || null,
+    year_min: formData.get('year_min') ? parseInt(formData.get('year_min')) : null,
+    year_max: formData.get('year_max') ? parseInt(formData.get('year_max')) : null,
+    price_min: formData.get('price_min') ? parseFloat(formData.get('price_min')) : null,
+    price_max: formData.get('price_max') ? parseFloat(formData.get('price_max')) : null,
+    mileage_max: formData.get('mileage_max') ? parseInt(formData.get('mileage_max')) : null,
+    zip_code: formData.get('zip_code') || null,
+    radius: formData.get('radius') ? parseInt(formData.get('radius')) : 50
+  };
+  
+  try {
+    const response = await fetch('/cars/live-listings', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    });
+    
+    if (response.status === 401) {
+      localStorage.removeItem('access_token');
+      window.location.href = '/login';
+      return;
+    }
+    
+    if (!response.ok) {
+      throw new Error('Failed to search listings');
+    }
+    
+    const result = await response.json();
+    displayListings(result);
+    
+  } catch (error) {
+    console.error('Error:', error);
+    document.getElementById('errorMessage').classList.remove('hidden');
+    document.getElementById('errorMessage').querySelector('p').textContent = 
+      'Failed to search listings. Please try again.';
+  } finally {
+    document.getElementById('loadingIndicator').classList.add('hidden');
+  }
+});
+
+function displayListings(result) {
+  const container = document.getElementById('resultsContainer');
+  const listContainer = document.getElementById('listingsList');
+  const summaryEl = document.getElementById('searchSummary');
+  const lastUpdatedEl = document.getElementById('lastUpdated');
+  
+  container.classList.remove('hidden');
+  summaryEl.textContent = result.search_summary;
+  
+  const updatedDate = new Date(result.last_updated);
+  lastUpdatedEl.textContent = `Updated: ${updatedDate.toLocaleTimeString()}`;
+  
+  listContainer.innerHTML = '';
+  
+  if (result.listings.length === 0) {
+    listContainer.innerHTML = `
+      <div class="col-span-2 bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
+        <p class="text-yellow-800">No listings found. Try adjusting your search criteria!</p>
+      </div>
+    `;
+    return;
+  }
+  
+  result.listings.forEach((listing, index) => {
+    const card = document.createElement('div');
+    card.className = 'bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-200';
+    
+    const priceFormatted = listing.price ? `$${listing.price.toLocaleString()}` : 'Call for Price';
+    const mileageFormatted = listing.mileage ? `${listing.mileage.toLocaleString()} mi` : 'N/A';
+    
+    // Badges
+    let badges = '';
+    if (listing.is_certified) {
+      badges += '<span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">Certified</span> ';
+    }
+    if (listing.price_drop) {
+      badges += `<span class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded">-$${listing.price_drop.toLocaleString()}</span> `;
+    }
+    if (listing.days_listed <= 7) {
+      badges += '<span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">New</span>';
+    }
+    
+    card.innerHTML = `
+      <!-- Car Image -->
+      <div class="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200">
+        <img src="${listing.image_url}" 
+             alt="${listing.title}"
+             class="w-full h-full object-cover"
+             onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600\\'><div class=\\'text-center text-white\\'><svg class=\\'w-16 h-16 mx-auto mb-2 opacity-75\\' fill=\\'currentColor\\' viewBox=\\'0 0 20 20\\'><path d=\\'M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z\\'></path><path d=\\'M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1v-5a1 1 0 00-.293-.707l-2-2A1 1 0 0015 7h-1z\\'></path></svg><p class=\\'font-semibold\\'>${listing.year} ${listing.make}</p><p class=\\'text-sm opacity-90\\'>${listing.model}</p></div></div>';">
+        <div class="absolute bottom-2 left-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-xs">
+          ${listing.source}
+        </div>
+      </div>
+      
+      <div class="p-4">
+        <div class="mb-2">
+          <h3 class="text-lg font-bold text-gray-900 line-clamp-1">${listing.title}</h3>
+          <div class="flex items-center justify-between mt-1">
+            <p class="text-xl text-indigo-600 font-semibold">${priceFormatted}</p>
+            <p class="text-sm text-gray-500">${mileageFormatted}</p>
+          </div>
+        </div>
+        
+        ${badges ? `<div class="mb-2 space-x-1">${badges}</div>` : ''}
+        
+        <div class="space-y-1 text-sm text-gray-600 mb-3">
+          ${listing.exterior_color ? `<p>🎨 ${listing.exterior_color}</p>` : ''}
+          ${listing.transmission ? `<p>⚙️ ${listing.transmission}</p>` : ''}
+          ${listing.location ? `<p>📍 ${listing.location}</p>` : ''}
+          ${listing.dealer_name ? `<p>🏢 ${listing.dealer_name}</p>` : ''}
+        </div>
+        
+        ${listing.features && listing.features.length > 0 ? `
+          <div class="mb-3">
+            <p class="text-xs text-gray-500">Features:</p>
+            <div class="flex flex-wrap gap-1 mt-1">
+              ${listing.features.slice(0, 4).map(f => 
+                `<span class="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">${f}</span>`
+              ).join('')}
+            </div>
+          </div>
+        ` : ''}
+        
+        <div class="grid grid-cols-2 gap-2">
+          <a href="${listing.url}" target="_blank" rel="noopener noreferrer"
+             class="text-center bg-indigo-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-indigo-700 transition-colors duration-200 text-sm">
+            View Listing →
+          </a>
+          <button onclick="saveToMyCars('${listing.year}', '${listing.make}', '${listing.model}', '${listing.trim || ''}', '${listing.vin || ''}')"
+                  class="bg-gray-100 text-gray-800 font-semibold py-2 px-4 rounded-md hover:bg-gray-200 transition-colors duration-200 text-sm">
+            ➕ Save Car
+          </button>
+        </div>
+      </div>
+    `;
+    
+    listContainer.appendChild(card);
+  });
+}
+
+async function saveToMyCars(year, make, model, trim, vin) {
+  const token = localStorage.getItem('access_token');
+  if (!token) {
+    window.location.href = '/login';
+    return;
+  }
+  
+  try {
+    const response = await fetch('/cars', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        year: parseInt(year),
+        make: make,
+        model: model,
+        trim: trim || null,
+        vin: vin || null
+      })
+    });
+    
+    if (response.ok) {
+      alert(`Saved ${year} ${make} ${model} to your cars!`);
+    } else {
+      alert('Failed to save car. Please try again.');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    alert('Failed to save car. Please try again.');
+  }
+}
+</script>
+{% endblock %}

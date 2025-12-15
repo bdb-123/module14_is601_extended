@@ -1,0 +1,290 @@
+{% extends "layout.html" %}
+
+{% block title %}Car Gallery - CarCompare{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-4">
+                🚗 Popular Car Gallery
+            </h1>
+            <p class="text-gray-600 text-lg">
+                Browse our collection of popular vehicles - Lexus luxury sedans, reliable Honda Civics, and more
+            </p>
+        </div>
+
+        <!-- Lexus Section -->
+        <div class="mb-16">
+            <div class="flex items-center mb-6">
+                <h2 class="text-3xl font-bold text-gray-800">Lexus Luxury Sedans</h2>
+                <span class="ml-4 px-4 py-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm rounded-full">
+                    Premium
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Lexus IS 350 -->
+                <div class="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden">
+                    <div class="relative">
+                        <img 
+                            src="https://cdn.imagin.studio/getImage?customer=hrjavascript-dev&make=lexus&modelFamily=is&modelYear=2023&angle=05&width=800&height=500" 
+                            alt="2023 Lexus IS 350"
+                            class="w-full h-64 object-cover"
+                            onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22800%22 height=%22500%22%3E%3Crect width=%22800%22 height=%22500%22 fill=%22%236366f1%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-family=%22Arial%22 font-size=%2248%22 fill=%22white%22%3ELexus IS 350%3C/text%3E%3C/svg%3E';"
+                        >
+                        <div class="absolute top-4 right-4 bg-white px-3 py-1 rounded-full text-sm font-semibold text-indigo-600">
+                            Sport Sedan
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-2">Lexus IS 350</h3>
+                        <p class="text-gray-600 mb-4">Premium sport sedan with V6 power and luxury refinement</p>
+                        <div class="space-y-2 mb-4">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-500">Year Range:</span>
+                                <span class="font-semibold text-gray-800">2014-2023</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-500">Price Range:</span>
+                                <span class="font-semibold text-indigo-600">$22k - $45k</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-500">Engine:</span>
+                                <span class="font-semibold text-gray-800">3.5L V6</span>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="px-3 py-1 bg-indigo-50 text-indigo-600 text-xs rounded-full">Leather</span>
+                            <span class="px-3 py-1 bg-indigo-50 text-indigo-600 text-xs rounded-full">Sunroof</span>
+                            <span class="px-3 py-1 bg-indigo-50 text-indigo-600 text-xs rounded-full">Premium Audio</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lexus ES 350 -->
+                <div class="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden">
+                    <div class="relative">
+                        <img 
+                            src="https://cdn.imagin.studio/getImage?customer=hrjavascript-dev&make=lexus&modelFamily=es&modelYear=2023&angle=05&width=800&height=500" 
+                            alt="2023 Lexus ES 350"
+                            class="w-full h-64 object-cover"
+                            onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22800%22 height=%22500%22%3E%3Crect width=%22800%22 height=%22500%22 fill=%22%239333ea%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-family=%22Arial%22 font-size=%2248%22 fill=%22white%22%3ELexus ES 350%3C/text%3E%3C/svg%3E';"
+                        >
+                        <div class="absolute top-4 right-4 bg-white px-3 py-1 rounded-full text-sm font-semibold text-purple-600">
+                            Luxury Sedan
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-2">Lexus ES 350</h3>
+                        <p class="text-gray-600 mb-4">Spacious luxury sedan known for comfort and reliability</p>
+                        <div class="space-y-2 mb-4">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-500">Year Range:</span>
+                                <span class="font-semibold text-gray-800">2010-2023</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-500">Price Range:</span>
+                                <span class="font-semibold text-purple-600">$12k - $45k</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-500">Engine:</span>
+                                <span class="font-semibold text-gray-800">3.5L V6</span>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="px-3 py-1 bg-purple-50 text-purple-600 text-xs rounded-full">Heated Seats</span>
+                            <span class="px-3 py-1 bg-purple-50 text-purple-600 text-xs rounded-full">Navigation</span>
+                            <span class="px-3 py-1 bg-purple-50 text-purple-600 text-xs rounded-full">Safety+</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lexus RX 350 -->
+                <div class="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden">
+                    <div class="relative">
+                        <img 
+                            src="https://cdn.imagin.studio/getImage?customer=hrjavascript-dev&make=lexus&modelFamily=rx&modelYear=2022&angle=05&width=800&height=500" 
+                            alt="2022 Lexus RX 350"
+                            class="w-full h-64 object-cover"
+                            onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22800%22 height=%22500%22%3E%3Crect width=%22800%22 height=%22500%22 fill=%22%236366f1%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-family=%22Arial%22 font-size=%2248%22 fill=%22white%22%3ELexus RX 350%3C/text%3E%3C/svg%3E';"
+                        >
+                        <div class="absolute top-4 right-4 bg-white px-3 py-1 rounded-full text-sm font-semibold text-indigo-600">
+                            Luxury SUV
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-2">Lexus RX 350</h3>
+                        <p class="text-gray-600 mb-4">Premium midsize SUV with exceptional comfort and features</p>
+                        <div class="space-y-2 mb-4">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-500">Year Range:</span>
+                                <span class="font-semibold text-gray-800">2016-2023</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-500">Price Range:</span>
+                                <span class="font-semibold text-indigo-600">$30k - $48k</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-500">Drivetrain:</span>
+                                <span class="font-semibold text-gray-800">AWD Available</span>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="px-3 py-1 bg-indigo-50 text-indigo-600 text-xs rounded-full">Panoramic Roof</span>
+                            <span class="px-3 py-1 bg-indigo-50 text-indigo-600 text-xs rounded-full">AWD</span>
+                            <span class="px-3 py-1 bg-indigo-50 text-indigo-600 text-xs rounded-full">7-Seater</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Honda Civic Section -->
+        <div class="mb-16">
+            <div class="flex items-center mb-6">
+                <h2 class="text-3xl font-bold text-gray-800">Honda Civic - Reliable & Efficient</h2>
+                <span class="ml-4 px-4 py-1 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-sm rounded-full">
+                    Best Value
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Civic Sedan -->
+                <div class="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden">
+                    <div class="relative">
+                        <img 
+                            src="https://cdn.imagin.studio/getImage?customer=hrjavascript-dev&make=honda&modelFamily=civic&modelYear=2023&angle=05&width=800&height=500" 
+                            alt="2023 Honda Civic Sedan"
+                            class="w-full h-64 object-cover"
+                            onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22800%22 height=%22500%22%3E%3Crect width=%22800%22 height=%22500%22 fill=%22%2310b981%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-family=%22Arial%22 font-size=%2248%22 fill=%22white%22%3EHonda Civic%3C/text%3E%3C/svg%3E';"
+                        >
+                        <div class="absolute top-4 right-4 bg-white px-3 py-1 rounded-full text-sm font-semibold text-green-600">
+                            Sedan
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-2">Honda Civic Sedan</h3>
+                        <p class="text-gray-600 mb-4">America's favorite compact sedan with proven reliability</p>
+                        <div class="space-y-2 mb-4">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-500">Year Range:</span>
+                                <span class="font-semibold text-gray-800">2015-2023</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-500">Price Range:</span>
+                                <span class="font-semibold text-green-600">$12k - $26k</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-500">MPG:</span>
+                                <span class="font-semibold text-gray-800">Up to 42 MPG</span>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="px-3 py-1 bg-green-50 text-green-600 text-xs rounded-full">Honda Sensing</span>
+                            <span class="px-3 py-1 bg-green-50 text-green-600 text-xs rounded-full">Apple CarPlay</span>
+                            <span class="px-3 py-1 bg-green-50 text-green-600 text-xs rounded-full">Turbo Available</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Civic Coupe -->
+                <div class="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden">
+                    <div class="relative">
+                        <img 
+                            src="https://cdn.imagin.studio/getImage?customer=hrjavascript-dev&make=honda&modelFamily=civic&modelYear=2020&angle=05&width=800&height=500" 
+                            alt="2020 Honda Civic Coupe"
+                            class="w-full h-64 object-cover"
+                            onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22800%22 height=%22500%22%3E%3Crect width=%22800%22 height=%22500%22 fill=%22%2306b6d4%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-family=%22Arial%22 font-size=%2248%22 fill=%22white%22%3ECivic Coupe%3C/text%3E%3C/svg%3E';"
+                        >
+                        <div class="absolute top-4 right-4 bg-white px-3 py-1 rounded-full text-sm font-semibold text-cyan-600">
+                            Coupe
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-2">Honda Civic Coupe</h3>
+                        <p class="text-gray-600 mb-4">Sporty two-door with sleek styling and fun-to-drive dynamics</p>
+                        <div class="space-y-2 mb-4">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-500">Year Range:</span>
+                                <span class="font-semibold text-gray-800">2016-2020</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-500">Price Range:</span>
+                                <span class="font-semibold text-cyan-600">$15k - $22k</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-500">Style:</span>
+                                <span class="font-semibold text-gray-800">2-Door Sport</span>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="px-3 py-1 bg-cyan-50 text-cyan-600 text-xs rounded-full">Sport Mode</span>
+                            <span class="px-3 py-1 bg-cyan-50 text-cyan-600 text-xs rounded-full">Manual Available</span>
+                            <span class="px-3 py-1 bg-cyan-50 text-cyan-600 text-xs rounded-full">Sunroof</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Civic Hatchback -->
+                <div class="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden">
+                    <div class="relative">
+                        <img 
+                            src="https://cdn.imagin.studio/getImage?customer=hrjavascript-dev&make=honda&modelFamily=civic&modelYear=2022&angle=05&width=800&height=500" 
+                            alt="2022 Honda Civic Hatchback"
+                            class="w-full h-64 object-cover"
+                            onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22800%22 height=%22500%22%3E%3Crect width=%22800%22 height=%22500%22 fill=%22%2310b981%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-family=%22Arial%22 font-size=%2242%22 fill=%22white%22%3ECivic Hatchback%3C/text%3E%3C/svg%3E';"
+                        >
+                        <div class="absolute top-4 right-4 bg-white px-3 py-1 rounded-full text-sm font-semibold text-emerald-600">
+                            Hatchback
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-2">Honda Civic Hatchback</h3>
+                        <p class="text-gray-600 mb-4">Versatile 5-door with extra cargo space and sporty appeal</p>
+                        <div class="space-y-2 mb-4">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-500">Year Range:</span>
+                                <span class="font-semibold text-gray-800">2017-2023</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-500">Price Range:</span>
+                                <span class="font-semibold text-emerald-600">$16k - $28k</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-500">Cargo:</span>
+                                <span class="font-semibold text-gray-800">25.7 cu ft</span>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="px-3 py-1 bg-emerald-50 text-emerald-600 text-xs rounded-full">Sport Touring</span>
+                            <span class="px-3 py-1 bg-emerald-50 text-emerald-600 text-xs rounded-full">Versatile</span>
+                            <span class="px-3 py-1 bg-emerald-50 text-emerald-600 text-xs rounded-full">Tech Pack</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Call to Action -->
+        <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-8 text-center text-white shadow-xl">
+            <h2 class="text-3xl font-bold mb-4">Ready to Find Your Perfect Car?</h2>
+            <p class="text-lg mb-6 text-indigo-100">
+                Add these cars to your garage and start comparing listings from multiple marketplaces
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="/cars-ui" class="px-8 py-3 bg-white text-indigo-600 rounded-lg font-semibold hover:bg-indigo-50 transition-colors duration-200">
+                    🚗 My Cars
+                </a>
+                <a href="/recommendations-ui" class="px-8 py-3 bg-indigo-500 text-white rounded-lg font-semibold hover:bg-indigo-400 transition-colors duration-200 border-2 border-white">
+                    ✨ Get Recommendations
+                </a>
+                <a href="/live-listings-ui" class="px-8 py-3 bg-purple-500 text-white rounded-lg font-semibold hover:bg-purple-400 transition-colors duration-200 border-2 border-white">
+                    🔍 Browse Listings
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

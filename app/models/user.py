@@ -103,6 +103,16 @@ class User(Base):
                                back_populates="user", 
                                cascade="all, delete-orphan")  # Delete user's calculations when user is deleted
     
+    # Relationships - one-to-many with Car model
+    cars = relationship("Car",
+                       back_populates="user",
+                       cascade="all, delete-orphan")  # Delete user's cars when user is deleted
+    
+    # Relationships - one-to-many with Listing model
+    listings = relationship("Listing",
+                           back_populates="user",
+                           cascade="all, delete-orphan")  # Delete user's listings when user is deleted
+    
     def __init__(self, *args, **kwargs):
         """Initialize a new user, handling password hashing if provided."""
         if "hashed_password" in kwargs:

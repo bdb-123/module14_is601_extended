@@ -185,8 +185,12 @@ def fastapi_server():
 
     logger.info(f"Starting FastAPI server on port {base_port}...")
 
+    # Use the virtual environment's python and uvicorn
+    import sys
+    python_executable = sys.executable
+    
     process = subprocess.Popen(
-        ['uvicorn', 'app.main:app', '--host', '127.0.0.1', '--port', str(base_port)],
+        [python_executable, '-m', 'uvicorn', 'app.main:app', '--host', '127.0.0.1', '--port', str(base_port)],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
